@@ -15,33 +15,31 @@ int main() {
     std::vector<std::string> field;
     std::string line;
     while (std::getline(file, line)) field.push_back(std::move(line));
-    int start_j = 0;
-    for (int i = 0; i < field.size(); ++i) {
-        std::string& line = field.at(i);
-        for (int j = start_j; j < line.size(); ++j) {
-            start_j = 0;
-            char symbol = line.at(j);
-            if (symbol == '.') continue;
-            uint32_t rolls = 0;
-            for (auto& dir : directions) {
-                int pos_x = j + dir.first;
-                int pos_y = i + dir.second;
-                if (!utils::is_valid_pos(pos_x, pos_y, field, line.size())) continue;
-                if (field.at(pos_y).at(pos_x) == '@') {
-                    ++rolls;
-                    if (rolls > limit) break;
+    while (true) {
+        int removed = 0;
+        for (int i = 0; i < field.size(); ++i) {
+            std::string& line = field.at(i);
+            for (int j = 0; j < line.size(); ++j) {
+                char symbol = line.at(j);
+                if (symbol == '.') continue;
+                uint32_t rolls = 0;
+                for (auto& dir : directions) {
+                    int pos_x = j + dir.first;
+                    int pos_y = i + dir.second;
+                    if (!utils::is_valid_pos(pos_x, pos_y, field, line.size())) continue;
+                    if (field.at(pos_y).at(pos_x) == '@') {
+                        ++rolls;
+                        if (rolls > limit) break;
+                    }
+                }
+                if (rolls < limit) {
+                    line.at(j) = '.';
+                    ++removed;
                 }
             }
-            if (rolls < limit) {
-                line.at(j) = '.';
-                ++result;
-                start_j = j - 1;
-                if (start_j < 0) start_j = 0;
-                i = i - 2; // because ++i
-                if (i < -1) i = -1;
-                break;
-            }
         }
+        result += removed;
+        if (removed <= 0) break;
     }
     file.close();
     std::cout << "result equals to: " << result << std::endl;
